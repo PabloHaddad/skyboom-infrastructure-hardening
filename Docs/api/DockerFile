@@ -1,0 +1,7 @@
+FROM php:8.2-fpm-alpine
+
+# Instala as extensões PDO e MySQLi necessárias para o PHP conversar com o MariaDB
+RUN docker-php-ext-install pdo pdo_mysql mysqli
+
+# Define o diretório de trabalho padrão
+WORKDIR /var/www/html
