@@ -1,0 +1,93 @@
+# ========================================================
+# SKYBOOM EXPRESS - INFRAESTRUTURA ORQUESTRADA DOCKER
+# ========================================================
+
+services:
+  # ========================================================
+  # 1. PROXY REVERSO E BORDA (SEGURANÇA HTTP)
+  # ========================================================
+  proxy:
+    image: nginx:stable-alpine
+    container_name: skyboom_proxy
+    ports:
+      - "80:80"
+    volumes:
+      - ./proxy/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./proxy/.htpasswd:/etc/nginx/.htpasswd:ro
+    networks:
+      - frontend
+      - backend
+    depends_on:
+      - site
+      - admin
+      - api
+    restart: unless-stopped
+
+  # ========================================================
+  # 2. INTERFACE PÚBLICA (WEB SERVER ESTÁTICO HARDENED)
+  # ========================================================
+  site:
+    image: nginx:stable-alpine
+    container_name: skyboom_site
+    volumes:
+      - ./site:/usr/share/nginx/html:ro
+    networks:
+      - frontend
+    restart: unless-stopped
+
+  # ========================================================
+  # 3. CAMADA DE APLICAÇÃO E PROCESSAMENTO (MOTOR PHP)
+  # ========================================================
+  api:
+    image: php:8.2-fpm-alpine
+    container_name: skyboom_api
+    volumes:
+      - ./api:/var/www/html
+    networks:
+      - backend
+    restart: unless-stopped
+
+  # ========================================================
+  # 4. PAINEL ADMINISTRATIVO CORPORATIVO (PHP/WEB)
+  # ========================================================
+  admin:
+    image: nginx:stable-alpine
+    container_name: skyboom_admin
+    volumes:
+      - ./api/admin:/usr/share/nginx/html:ro
+    networks:
+      - frontend
+      - backend
+    restart: unless-stopped
+
+  # ========================================================
+  # 5. PERSISTÊNCIA DE DADOS (DATABASE PRIVADO ISOLADO)
+  # ========================================================
+  db:
+    image: mariadb:11
+    container_name: skyboom_db
+    restart: unless-stopped
+    networks:
+      - backend
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - mariadb_data:/var/lib/mysql
+
+# ========================================================
+# REDES LÓGICAS ISOLADAS
+# ========================================================
+networks:
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge
+
+# ========================================================
+# DEFINIÇÃO DE VOLUMES GLOBAIS PERSISTENTES
+# ========================================================
+volumes:
+  mariadb_data:
