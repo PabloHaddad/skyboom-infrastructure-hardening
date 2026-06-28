@@ -1,0 +1,643 @@
+<!DOCTYPE html><html class="dark" lang="pt-BR" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>SkyBoom Express - Logística Aérea Inteligente</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-left-color: rgba(255, 255, 255, 0.2);
+            border-top-color: rgba(255, 255, 255, 0.2);
+        }
+        .glow-effect {
+            box-shadow: 0 0 15px rgba(0, 238, 252, 0.3);
+        }
+        .btn-glow:hover {
+            box-shadow: 0 0 20px rgba(0, 238, 252, 0.6);
+        }
+        .card-glow:hover {
+            box-shadow: 0 0 20px rgba(0, 238, 252, 0.15);
+            border-color: rgba(0, 238, 252, 0.3);
+        }
+        .grid-overlay {
+            background-image:
+                linear-gradient(to right, rgba(255,255,255,0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255,255,255,0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+        .radar-line {
+            border-right: 1px dotted rgba(0, 238, 252, 0.5);
+        }
+        @keyframes scan {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+        .scanner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 20%;
+            background: linear-gradient(to bottom, transparent, rgba(0, 238, 252, 0.2), transparent);
+            animation: scan 4s linear infinite;
+            pointer-events: none;
+        }
+        @keyframes pulse-neon {
+            0% { box-shadow: 0 0 5px #00eefc, 0 0 10px #00eefc; opacity: 0.8; }
+            50% { box-shadow: 0 0 15px #00eefc, 0 0 25px #00eefc; opacity: 1; }
+            100% { box-shadow: 0 0 5px #00eefc, 0 0 10px #00eefc; opacity: 0.8; }
+        }
+        .pulse-indicator {
+            animation: pulse-neon 2s infinite;
+        }
+        @keyframes marquee {
+            0% { transform: translateY(100%); }
+            100% { transform: translateY(-100%); }
+        }
+        .terminal-scroll {
+            animation: marquee 10s linear infinite;
+        }
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .shake {
+            animation: shake 0.36s ease-in-out;
+        }
+        .status-chip {
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+
+        /* Moving dots simulation */
+        @keyframes moveDot1 {
+            0% { top: 30%; left: 40%; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 60%; left: 70%; opacity: 0; }
+        }
+        @keyframes moveDot2 {
+            0% { top: 20%; left: 30%; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 50%; left: 50%; opacity: 0; }
+        }
+        @keyframes moveDot3 {
+            0% { top: 70%; left: 60%; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 30%; left: 40%; opacity: 0; }
+        }
+        .map-dot {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background-color: #00eefc;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #00eefc;
+            pointer-events: none;
+        }
+        .dot-1 { animation: moveDot1 4s linear infinite; }
+        .dot-2 { animation: moveDot2 5s linear infinite 1s; }
+        .dot-3 { animation: moveDot3 6s linear infinite 2s; }
+
+    </style>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+                "secondary-container": "#00eefc",
+                "tertiary-fixed": "#ffdcc3",
+                "on-primary": "#002682",
+                "on-background": "#dee1f7",
+                "on-tertiary": "#4d2600",
+                "surface-container-lowest": "#090e1c",
+                "primary": "#b7c4ff",
+                "surface-container": "#1a1f2f",
+                "error-container": "#93000a",
+                "outline": "#8d90a2",
+                "tertiary-container": "#9c5300",
+                "on-primary-fixed-variant": "#0038b6",
+                "tertiary": "#ffb77d",
+                "on-tertiary-fixed": "#2f1500",
+                "on-surface": "#dee1f7",
+                "inverse-primary": "#004ced",
+                "surface-variant": "#2f3445",
+                "primary-fixed-dim": "#b7c4ff",
+                "secondary-fixed-dim": "#00dbe9",
+                "tertiary-fixed-dim": "#ffb77d",
+                "surface-container-low": "#161b2b",
+                "on-tertiary-fixed-variant": "#6e3900",
+                "on-primary-fixed": "#001452",
+                "inverse-surface": "#dee1f7",
+                "inverse-on-surface": "#2b3040",
+                "primary-fixed": "#dde1ff",
+                "secondary-fixed": "#7df4ff",
+                "on-secondary-fixed-variant": "#004f54",
+                "on-tertiary-container": "#ffdfc8",
+                "background": "#0e1322",
+                "outline-variant": "#434656",
+                "on-primary-container": "#dfe3ff",
+                "on-secondary-container": "#00686f",
+                "surface-container-high": "#25293a",
+                "surface-container-highest": "#2f3445",
+                "on-secondary-fixed": "#002022",
+                "primary-container": "#0052ff",
+                "on-error": "#690005",
+                "surface-bright": "#343949",
+                "on-secondary": "#00363a",
+                "error": "#ffb4ab",
+                "surface-tint": "#b7c4ff",
+                "surface": "#0e1322",
+                "on-surface-variant": "#c3c5d9",
+                "surface-dim": "#0e1322",
+                "on-error-container": "#ffdad6",
+                "secondary": "#d3fbff"
+        },
+        "borderRadius": {
+                "DEFAULT": "0.125rem",
+                "lg": "0.25rem",
+                "xl": "0.5rem",
+                "full": "0.75rem"
+        },
+        "spacing": {
+                "margin-desktop": "64px",
+                "unit": "8px",
+                "gutter": "24px",
+                "margin-mobile": "16px",
+                "container-max": "1440px",
+                "margin-tablet": "32px"
+        },
+        "fontFamily": {
+                "headline-lg": [
+                        "Space Grotesk"
+                ],
+                "body-md": [
+                        "Inter"
+                ],
+                "headline-xl": [
+                        "Space Grotesk"
+                ],
+                "mono-sm": [
+                        "Inter"
+                ],
+                "display-lg": [
+                        "Space Grotesk"
+                ],
+                "label-md": [
+                        "Inter"
+                ],
+                "headline-lg-mobile": [
+                        "Space Grotesk"
+                ],
+                "body-lg": [
+                        "Inter"
+                ]
+        },
+        "fontSize": {
+                "headline-lg": [
+                        "24px",
+                        {
+                                "lineHeight": "32px",
+                                "fontWeight": "600"
+                        }
+                ],
+                "body-md": [
+                        "16px",
+                        {
+                                "lineHeight": "24px",
+                                "fontWeight": "400"
+                        }
+                ],
+                "headline-xl": [
+                        "32px",
+                        {
+                                "lineHeight": "40px",
+                                "letterSpacing": "-0.01em",
+                                "fontWeight": "600"
+                        }
+                ],
+                "mono-sm": [
+                        "12px",
+                        {
+                                "lineHeight": "16px",
+                                "fontWeight": "400"
+                        }
+                ],
+                "display-lg": [
+                        "48px",
+                        {
+                                "lineHeight": "56px",
+                                "letterSpacing": "-0.02em",
+                                "fontWeight": "700"
+                        }
+                ],
+                "label-md": [
+                        "14px",
+                        {
+                                "lineHeight": "20px",
+                                "letterSpacing": "0.05em",
+                                "fontWeight": "500"
+                        }
+                ],
+                "headline-lg-mobile": [
+                        "20px",
+                        {
+                                "lineHeight": "28px",
+                                "fontWeight": "600"
+                        }
+                ],
+                "body-lg": [
+                        "18px",
+                        {
+                                "lineHeight": "28px",
+                                "fontWeight": "400"
+                        }
+                ]
+        }
+},
+    },
+  }
+</script>
+</head>
+<body class="bg-background text-on-background font-body-md text-body-md overflow-x-hidden selection:bg-secondary-container selection:text-on-secondary-container relative">
+<div class="fixed inset-0 grid-overlay z-[-1]"></div>
+<!-- Top Navigation -->
+<nav class="bg-surface/30 backdrop-blur-2xl fixed top-0 w-full z-50 border-b border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
+<div class="flex justify-between items-center w-full px-margin-desktop py-4 max-w-container-max mx-auto">
+<div class="font-headline-xl text-headline-xl font-bold tracking-tighter text-primary drop-shadow-[0_0_10px_rgba(183,196,255,0.5)]">SkyBoom Express</div>
+<div class="hidden md:flex gap-gutter items-center"><a class="text-on-surface-variant hover:text-on-surface transition-colors duration-200" href="#">Início</a><a class="text-on-surface-variant hover:text-on-surface transition-colors duration-200" href="#">Operações</a><a class="text-on-surface-variant hover:text-on-surface transition-colors duration-200" href="#">Cobertura</a><a class="text-on-surface-variant hover:text-on-surface transition-colors duration-200" href="#">Controle</a></div>
+<div class="flex items-center gap-unit">
+<button class="scale-95 active:scale-90 transition-transform duration-200 text-on-surface-variant hover:text-on-surface p-2 hover:bg-white/5 hover:backdrop-blur-md rounded-lg transition-all duration-300">
+<span class="material-symbols-outlined" data-icon="radar">radar</span>
+</button>
+<button class="scale-95 active:scale-90 transition-transform duration-200 text-on-surface-variant hover:text-on-surface p-2 hover:bg-white/5 hover:backdrop-blur-md rounded-lg transition-all duration-300">
+<span class="material-symbols-outlined" data-icon="notifications_active">notifications_active</span>
+</button>
+<div id="nav-auth-buttons" class="flex items-center">
+<button onclick="openLoginModal()" class="text-on-surface-variant hover:text-on-surface font-label-md text-label-md px-4 py-2 rounded-lg hover:bg-white/5 transition-all duration-300">Login</button>
+<button class="ml-4 bg-primary-container text-on-primary-container font-label-md text-label-md px-4 py-2 rounded-lg hover:bg-primary-container/80 transition-colors btn-glow">Cadastrar-se</button>
+</div>
+<div id="nav-logout-button" class="hidden flex items-center gap-4">
+<img id="userAvatar" class="hidden w-10 h-10 rounded-full object-cover border border-white/10" src="" alt="Avatar do usuário">
+<a href="logout.php" class="bg-error-container/20 text-error border border-error/20 hover:bg-error-container/40 font-label-md text-label-md px-4 py-2 rounded-lg transition-all duration-300 flex items-center gap-1">
+<span class="material-symbols-outlined text-sm" data-icon="logout">logout</span>
+Sair
+</a>
+</div>
+</div>
+</div>
+</nav>
+<!-- Hero Section -->
+<header class="relative min-h-screen flex items-center pt-24 overflow-hidden bg-fixed">
+<div class="absolute inset-0 z-0">
+<img alt="https://lh3.googleusercontent.com/aida-public/AB6AXuCdhmiMUFmazjgliyzYng-zs_wzEzYiYeMYLnN5B6DCwn4-rVSB-zsSPlKgLzGng-N0wKOf0zUQwZT63O97H79gier_SgPAWSjfSaWlwC6JVz5-G5Q7AAPGx1mHn4kfyJzd9Ebwi4Y5hr0cbt6XlsFdcyzQkoNb1OWGOc49RefYB1dh2u3Ol64gZX6ObyTF1rv-PLcXXF8AhhoXC903KAjAdSGHHOLNQr6aJj7tZcKBuMORBjK9J2ew4hmUYkzpq69dzT7J3kHuv1pq" class="w-full h-full object-cover opacity-40 mix-blend-luminosity transform scale-105" data-alt="https://lh3.googleusercontent.com/aida-public/AB6AXuCdhmiMUFmazjgliyzYng-zs_wzEzYiYeMYLnN5B6DCwn4-rVSB-zsSPlKgLzGng-N0wKOf0zUQwZT63O97H79gier_SgPAWSjfSaWlwC6JVz5-G5Q7AAPGx1mHn4kfyJzd9Ebwi4Y5hr0cbt6XlsFdcyzQkoNb1OWGOc49RefYB1dh2u3Ol64gZX6ObyTF1rv-PLcXXF8AhhoXC903KAjAdSGHHOLNQr6aJj7tZcKBuMORBjK9J2ew4hmUYkzpq69dzT7J3kHuv1pq" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCdhmiMUFmazjgliyzYng-zs_wzEzYiYeMYLnN5B6DCwn4-rVSB-zsSPlKgLzGng-N0wKOf0zUQwZT63O97H79gier_SgPAWSjfSaWlwC6JVz5-G5Q7AAPGx1mHn4kfyJzd9Ebwi4Y5hr0cbt6XlsFdcyzQkoNb1OWGOc49RefYB1dh2u3Ol64gZX6ObyTF1rv-PLcXXF8AhhoXC903KAjAdSGHHOLNQr6aJj7tZcKBuMORBjK9J2ew4hmUYkzpq69dzT7J3kHuv1pq">
+<div class="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent"></div>
+<div class="scanner"></div>
+</div>
+<div class="relative z-10 w-full max-w-container-max mx-auto px-margin-desktop md:flex md:items-center md:justify-between gap-gutter reveal active">
+<div class="max-w-2xl">
+<h1 class="font-display-lg text-display-lg text-on-surface mb-6 drop-shadow-md">Conectando o Brasil pelos céus.</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-8 max-w-xl">Logística aérea inteligente com rastreamento em tempo real, segurança avançada e cobertura nacional. Precisão industrial para suas operações críticas.</p>
+<div class="flex flex-col sm:flex-row gap-4">
+<button class="bg-secondary-container text-on-secondary-container font-label-md text-label-md px-8 py-4 rounded-lg flex items-center justify-center gap-2 btn-glow transition-all duration-300">
+<span class="material-symbols-outlined" data-icon="flight_takeoff">flight_takeoff</span>
+                        Rastrear Carga
+                    </button>
+<button class="glass-panel text-on-surface font-label-md text-label-md px-8 py-4 rounded-lg hover:bg-white/10 transition-colors duration-300 flex items-center justify-center gap-2">
+                        Solicitar Orçamento
+                    </button>
+</div>
+</div>
+<!-- Floating Stats Panel -->
+<div class="hidden md:block glass-panel p-6 rounded-xl w-80 relative transform translate-y-10 border border-white/20 shadow-2xl">
+<div class="absolute top-0 right-0 w-3 h-3 bg-secondary-container rounded-full m-4 pulse-indicator"></div>
+<h3 class="font-headline-lg text-headline-lg text-primary mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary-container" data-icon="monitor_heart">monitor_heart</span>
+                    Live Telemetry
+                </h3>
+<div class="space-y-4">
+<div class="border-l-2 border-secondary-container/50 pl-3">
+<div class="font-mono-sm text-mono-sm text-on-surface-variant">Active Flights</div>
+<div class="font-headline-xl text-headline-xl text-secondary-fixed">142</div>
+</div>
+<div class="border-l-2 border-outline-variant pl-3">
+<div class="font-mono-sm text-mono-sm text-on-surface-variant">Network Status</div>
+<div class="font-body-md text-body-md text-tertiary-fixed flex items-center gap-1">
+<span class="material-symbols-outlined text-sm" data-icon="check_circle">check_circle</span> Optimal
+                        </div>
+</div>
+</div>
+</div>
+</div>
+</header>
+<!-- Services Bento Grid -->
+<section class="py-24 relative reveal active">
+<div class="max-w-container-max mx-auto px-margin-desktop">
+<div class="mb-16">
+<h2 class="font-headline-xl text-headline-xl text-primary flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary-container" data-icon="deployed_code">deployed_code</span>
+                    Capacidades Operacionais
+                </h2>
+<div class="h-px w-full bg-gradient-to-r from-outline-variant to-transparent mt-4"></div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Service Cards -->
+<div class="glass-panel card-glow p-8 rounded-xl transition-all duration-300 group">
+<span class="material-symbols-outlined text-4xl text-secondary-container mb-6 block" data-icon="flight">flight</span>
+<h3 class="font-headline-lg text-headline-lg text-on-surface mb-2">Transporte Expresso</h3>
+<p class="text-on-surface-variant">Velocidade máxima para cargas críticas em toda a malha nacional.</p>
+</div>
+<div class="glass-panel card-glow p-8 rounded-xl transition-all duration-300 group">
+<span class="material-symbols-outlined text-4xl text-primary mb-6 block" data-icon="radar">radar</span>
+<h3 class="font-headline-lg text-headline-lg text-on-surface mb-2">Rastreamento</h3>
+<p class="text-on-surface-variant">Visibilidade total da cadeia de suprimentos via painel interativo.</p>
+</div>
+<div class="glass-panel card-glow p-8 rounded-xl transition-all duration-300 group">
+<span class="material-symbols-outlined text-4xl text-primary mb-6 block" data-icon="psychology">psychology</span>
+<h3 class="font-headline-lg text-headline-lg text-on-surface mb-2">Gestão por IA</h3>
+<p class="text-on-surface-variant">Otimização baseada em IA para redução de tempo e custo.</p>
+</div>
+<div class="glass-panel card-glow p-8 rounded-xl transition-all duration-300 group">
+<span class="material-symbols-outlined text-4xl text-secondary-container mb-6 block" data-icon="factory">factory</span>
+<h3 class="font-headline-lg text-headline-lg text-on-surface mb-2">Logística B2B</h3>
+<p class="text-on-surface-variant">Soluções dedicadas para cadeias de produção e montadoras.</p>
+</div>
+<div class="glass-panel card-glow p-8 rounded-xl transition-all duration-300 group">
+<span class="material-symbols-outlined text-4xl text-primary mb-6 block" data-icon="priority_high">priority_high</span>
+<h3 class="font-headline-lg text-headline-lg text-on-surface mb-2">Cargas Prioritárias</h3>
+<p class="text-on-surface-variant">Embarque e desembarque imediato para itens críticos.</p>
+</div>
+<div class="glass-panel card-glow p-8 rounded-xl transition-all duration-300 group">
+<span class="material-symbols-outlined text-4xl text-primary mb-6 block" data-icon="schedule">schedule</span>
+<h3 class="font-headline-lg text-headline-lg text-on-surface mb-2">Just-in-Time</h3>
+<p class="text-on-surface-variant">Entregas programadas com precisão de minutos.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Coverage Map Section -->
+<section class="py-24 relative reveal active">
+<div class="max-w-container-max mx-auto px-margin-desktop">
+<h2 class="font-headline-xl text-headline-xl text-primary mb-12 flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary-container" data-icon="public">public</span>
+                Cobertura Nacional
+            </h2><div class="flex items-center justify-center gap-3 mb-8 group">
+    <div class="relative flex h-3 w-3">
+        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary-container opacity-75"></span>
+        <span class="relative inline-flex rounded-full h-3 w-3 bg-secondary-container shadow-[0_0_10px_#00eefc]"></span>
+    </div>
+    <span class="font-mono-sm text-mono-sm tracking-widest text-secondary-container uppercase">
+        142 entregas no ar acontecendo agora
+    </span>
+</div>
+<div class="relative w-full h-[600px] rounded-2xl overflow-hidden glass-panel border-white/10">
+<img alt="https://lh3.googleusercontent.com/aida-public/AB6AXuDMRhhCxKqFfVNyIBppNGDKAlDt03PmxAxj9TKxq15aVAxeasRdPotI5SuHWXEMbKYTCAK7UbEfaszyNOjwu2JTLtZi5KQPpNEAtjUxdtdFvojKqyQvXkHYsP9xPwQ8XbdeOjwk4iGYjdmzGfF4V_ribTVpPUkPs8odjRMEZ15AuWoZcxBIomUoeaJNiI-MCiFr-W3oOTI_Gz3G-5SSxyUD0NWhGiWQcxuwEc0iwBlkxh8qfxwwsTQrMzyqs0T7QSdW4r6RiR8O5fKL" class="w-full h-full object-cover opacity-80 mix-blend-screen" data-alt="https://lh3.googleusercontent.com/aida-public/AB6AXuDMRhhCxKqFfVNyIBppNGDKAlDt03PmxAxj9TKxq15aVAxeasRdPotI5SuHWXEMbKYTCAK7UbEfaszyNOjwu2JTLtZi5KQPpNEAtjUxdtdFvojKqyQvXkHYsP9xPwQ8XbdeOjwk4iGYjdmzGfF4V_ribTVpPUkPs8odjRMEZ15AuWoZcxBIomUoeaJNiI-MCiFr-W3oOTI_Gz3G-5SSxyUD0NWhGiWQcxuwEc0iwBlkxh8qfxwwsTQrMzyqs0T7QSdW4r6RiR8O5fKL" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMRhhCxKqFfVNyIBppNGDKAlDt03PmxAxj9TKxq15aVAxeasRdPotI5SuHWXEMbKYTCAK7UbEfaszyNOjwu2JTLtZi5KQPpNEAtjUxdtdFvojKqyQvXkHYsP9xPwQ8XbdeOjwk4iGYjdmzGfF4V_ribTVpPUkPs8odjRMEZ15AuWoZcxBIomUoeaJNiI-MCiFr-W3oOTI_Gz3G-5SSxyUD0NWhGiWQcxuwEc0iwBlkxh8qfxwwsTQrMzyqs0T7QSdW4r6RiR8O5fKL">
+<div class="absolute inset-0 bg-gradient-to-t from-background/50 to-transparent"></div>
+<!-- Animated Dots -->
+<div class="map-dot dot-1"></div>
+<div class="map-dot dot-2"></div>
+<div class="map-dot dot-3"></div>
+</div>
+</div>
+</section>
+<!-- Control Tower Section -->
+<section class="py-24 relative reveal active">
+<div class="max-w-container-max mx-auto px-margin-desktop">
+<h2 class="font-headline-xl text-headline-xl text-primary mb-12 flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary-container" data-icon="account_tree">account_tree</span>
+                Torre de Controle
+            </h2><p class="font-body-md text-on-surface-variant mb-8 max-w-2xl border-l-2 border-secondary-container/30 pl-4">Nossa infraestrutura utiliza criptografia de nível militar e monitoramento preditivo por IA, garantindo segurança absoluta e zero perdas em cada operação.</p>
+<div class="relative w-full h-[500px] rounded-2xl overflow-hidden glass-panel border-white/10 flex items-center justify-center">
+<img alt="https://lh3.googleusercontent.com/aida-public/AB6AXuCv4_1U8HTCj7bya3bhDgaHszRqAtmFnkVWi6xEHNZxFYbgZT_wxbzR-C3O1gwH4gr56v7A25RJeqjJ0SKsbFP6jXq0wyKXT5QQvai7PbF1Yy3MIhqlyLsEyiBx7E_ZHDcznIOp-GLbGaY6ogWTM1tlMLls43vDBUPidJ_M9Her1FUcNZmEJzViTt3Ia8cMeeaH0F5oOnnMiWPxeUAlsdqJsE5h_Nw5xlVY_OQ4jdk44c8sbtsYqtpv-_SglncwrTWzw7K4JHw8uGXF" class="absolute inset-0 w-full h-full object-cover opacity-50 mix-blend-luminosity" data-alt="https://lh3.googleusercontent.com/aida-public/AB6AXuCv4_1U8HTCj7bya3bhDgaHszRqAtmFnkVWi6xEHNZxFYbgZT_wxbzR-C3O1gwH4gr56v7A25RJeqjJ0SKsbFP6jXq0wyKXT5QQvai7PbF1Yy3MIhqlyLsEyiBx7E_ZHDcznIOp-GLbGaY6ogWTM1tlMLls43vDBUPidJ_M9Her1FUcNZmEJzViTt3Ia8cMeeaH0F5oOnnMiWPxeUAlsdqJsE5h_Nw5xlVY_OQ4jdk44c8sbtsYqtpv-_SglncwrTWzw7K4JHw8uGXF" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCv4_1U8HTCj7bya3bhDgaHszRqAtmFnkVWi6xEHNZxFYbgZT_wxbzR-C3O1gwH4gr56v7A25RJeqjJ0SKsbFP6jXq0wyKXT5QQvai7PbF1Yy3MIhqlyLsEyiBx7E_ZHDcznIOp-GLbGaY6ogWTM1tlMLls43vDBUPidJ_M9Her1FUcNZmEJzViTt3Ia8cMeeaH0F5oOnnMiWPxeUAlsdqJsE5h_Nw5xlVY_OQ4jdk44c8sbtsYqtpv-_SglncwrTWzw7K4JHw8uGXF">
+<div class="absolute inset-0 bg-background/40"></div>
+<div class="relative z-10 w-96 glass-panel p-6 rounded-xl border border-secondary-container/30 h-80 overflow-hidden flex flex-col">
+<div class="text-secondary-container font-mono-sm text-mono-sm font-bold mb-4 flex items-center gap-2 border-b border-white/10 pb-2">
+<span class="w-2 h-2 rounded-full bg-secondary-container animate-pulse"></span> Live Data Feed
+                    </div>
+<div class="flex-1 overflow-hidden relative font-mono-sm text-mono-sm text-on-surface-variant">
+<div class="absolute w-full terminal-scroll flex flex-col gap-2">
+<div class="">&gt; SPO -&gt; BSB: DEPARTED</div>
+<div class="text-primary">&gt; FLIGHT SB702: ON TRACK</div>
+<div class="">&gt; REC -&gt; SSA: ARRIVED</div>
+<div class="">&gt; SYSTEM LOAD: 42%</div>
+<div class="text-error">&gt; ALERT: WEATHER RIO</div>
+<div class="">&gt; MAO -&gt; BEL: CLEARED</div>
+<div class="text-secondary-container">&gt; UPTIME: 99.99%</div>
+<div class="">&gt; SPO -&gt; BSB: DEPARTED</div>
+<div class="text-primary">&gt; FLIGHT SB702: ON TRACK</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Footer -->
+<footer class="bg-surface-container-lowest w-full relative border-t border-outline-variant/20 mt-24">
+<div class="flex flex-col md:flex-row justify-between items-center w-full px-margin-desktop py-margin-tablet max-w-container-max mx-auto gap-gutter">
+<div class="font-headline-lg text-headline-lg font-black text-secondary-fixed">
+                SkyBoom Express
+            </div>
+<div class="flex flex-wrap gap-6 justify-center">
+<a class="text-primary font-semibold opacity-80 hover:opacity-100 transition-opacity" href="#">Operational Safety</a>
+<a class="text-on-surface-variant hover:text-secondary-container transition-colors duration-200 opacity-80 hover:opacity-100" href="#">Fleet Registry</a>
+<a class="text-on-surface-variant hover:text-secondary-container transition-colors duration-200 opacity-80 hover:opacity-100" href="#">Privacy Protocol</a>
+<a class="text-on-surface-variant hover:text-secondary-container transition-colors duration-200 opacity-80 hover:opacity-100" href="#">Data Integrity</a>
+<a class="text-on-surface-variant hover:text-secondary-container transition-colors duration-200 opacity-80 hover:opacity-100" href="#">Contact Center</a>
+</div>
+<div class="font-body-md text-body-md text-on-surface-variant text-sm text-center md:text-right mt-4 md:mt-0">
+                © 2024 SkyBoom Express. Aero-Industrial Precision Logistics. All Rights Reserved.
+            </div>
+</div>
+</footer>
+<script>
+    // Reveal on scroll
+    function reveal() {
+        var reveals = document.querySelectorAll(".reveal");
+        for (var i = 0; i < reveals.length; i++) {
+            var windowHeight = window.innerHeight;
+            var elementTop = reveals[i].getBoundingClientRect().top;
+            var elementVisible = 150;
+            if (elementTop < windowHeight - elementVisible) {
+                reveals[i].classList.add("active");
+            }
+        }
+    }
+    window.addEventListener("scroll", reveal);
+    reveal(); // Trigger on load
+</script>
+
+<!-- Login Modal -->
+<div id="loginModal" class="fixed inset-0 bg-background/80 backdrop-blur-md z-[100] flex items-center justify-center hidden">
+    <div class="glass-panel p-8 rounded-xl max-w-md w-full mx-4 border border-white/20 shadow-2xl relative">
+        <button onclick="closeLoginModal()" class="absolute top-4 right-4 text-on-surface-variant hover:text-on-surface transition-colors p-2 hover:bg-white/5 rounded-lg">
+            <span class="material-symbols-outlined" data-icon="close">close</span>
+        </button>
+
+        <div class="text-center mb-6">
+            <div class="font-headline-xl text-headline-xl font-bold tracking-tighter text-primary drop-shadow-[0_0_10px_rgba(183,196,255,0.5)] mb-2">Autenticação</div>
+            <p class="font-body-md text-on-surface-variant text-sm">Insira suas credenciais corporativas</p>
+        </div>
+
+        <div id="loginErrorMsg" class="hidden bg-error-container/40 border border-error/30 text-error p-3 rounded-lg text-sm mb-4 flex items-center gap-2">
+            <span class="material-symbols-outlined text-sm" data-icon="error">error</span>
+            <span id="errorText">E-mail ou senha incorretos. Acesso negado.</span>
+        </div>
+        <div id="loginStatusMsg" class="hidden mb-4 p-3 rounded-lg bg-secondary-container/10 border border-secondary-container/20 text-secondary-container text-sm flex items-center gap-2 status-chip">
+            <span class="material-symbols-outlined animate-spin">sync</span>
+            <span id="statusText">Aguardando resposta do servidor...</span>
+        </div>
+
+        <form action="login.php" method="POST" class="space-y-4">
+            <div>
+                <label for="email" class="font-mono-sm text-mono-sm text-on-surface-variant mb-1 uppercase tracking-widest block">E-mail Corporativo</label>
+                <input type="email" id="email" name="email" required placeholder="colaborador@skyboom.com" class="w-full bg-background/60 border border-outline/30 rounded-lg px-4 py-3 text-on-surface placeholder-on-surface-variant/40 focus:outline-none focus:border-secondary-container focus:ring-1 focus:ring-secondary-container transition-all duration-300">
+            </div>
+
+            <div>
+                <label for="senha" class="font-mono-sm text-mono-sm text-on-surface-variant mb-1 uppercase tracking-widest block">Senha</label>
+                <input type="password" id="senha" name="senha" required placeholder="••••••••" class="w-full bg-background/60 border border-outline/30 rounded-lg px-4 py-3 text-on-surface placeholder-on-surface-variant/40 focus:outline-none focus:border-secondary-container focus:ring-1 focus:ring-secondary-container transition-all duration-300">
+            </div>
+
+            <button type="submit" class="w-full bg-primary-container text-on-primary-container font-label-md text-label-md py-4 rounded-lg btn-glow transition-all duration-300 flex items-center justify-center gap-2 mt-6">
+                <span class="material-symbols-outlined" data-icon="login">login</span>
+                Acessar Canal Seguro
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openLoginModal() {
+        document.getElementById('loginModal').classList.remove('hidden');
+    }
+
+    function closeLoginModal() {
+        document.getElementById('loginModal').classList.add('hidden');
+        const url = new URL(window.location.href);
+        url.searchParams.delete('error');
+        window.history.replaceState({}, document.title, url.pathname);
+        document.getElementById('loginErrorMsg').classList.add('hidden');
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const error = urlParams.get('error');
+        const errorMsgEl = document.getElementById('loginErrorMsg');
+        const errorTextEl = document.getElementById('errorText');
+        const statusMsgEl = document.getElementById('loginStatusMsg');
+        const loginStatusText = document.getElementById('statusText');
+
+        if (error) {
+            if (error === 'auth_failed') {
+                errorTextEl.innerText = 'E-mail ou senha incorretos. Acesso negado.';
+            } else if (error === 'timeout') {
+                errorTextEl.innerText = 'Sessão expirada por inatividade. Faça login novamente.';
+            } else if (error === 'gatekeeper_failed') {
+                errorTextEl.innerText = 'Acesso negado. Ação reportada à segurança.';
+            }
+            errorMsgEl.classList.remove('hidden');
+            openLoginModal();
+        }
+
+        // Verify active user session dynamically
+        fetch('session_info.php')
+            .then(response => response.json())
+            .then(data => {
+                if (data.logged_in) {
+                    document.getElementById('nav-auth-buttons').classList.add('hidden');
+                    document.getElementById('nav-logout-button').classList.remove('hidden');
+                    const avatar = document.getElementById('userAvatar');
+                    if (data.avatar_src) {
+                        avatar.src = data.avatar_src;
+                        avatar.classList.remove('hidden');
+                    } else if (data.perfil === 'admin') {
+                        avatar.src = 'data:image/svg+xml;base64,' + btoa('<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect width="80" height="80" fill="#0e1322"/><circle cx="40" cy="28" r="18" fill="#00eefc"/><path d="M16 70c0-14 12-24 24-24s24 10 24 24" fill="none" stroke="#00eefc" stroke-width="6" stroke-linecap="round"/></svg>');
+                        avatar.classList.remove('hidden');
+                    }
+                }
+            })
+            .catch(err => console.error('Erro de sessão:', err));
+
+        // Intercept form submit to send via AJAX and prevent leaving page
+        const loginForm = document.querySelector('#loginModal form');
+        if (loginForm) {
+            loginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                const submitBtn = loginForm.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+
+                loginStatusText.innerText = 'Verificando seus dados...';
+                statusMsgEl.classList.remove('hidden');
+                submitBtn.innerHTML = '<span class="material-symbols-outlined animate-spin" style="animation: spin 1s linear infinite;">sync</span> Autenticando...';
+                submitBtn.disabled = true;
+
+                errorMsgEl.classList.add('hidden');
+                statusMsgEl.classList.remove('shake');
+
+                fetch('session_info.php')
+                    .then(res => res.json())
+                    .then(sessionData => {
+                        const formData = new FormData(loginForm);
+                        if (sessionData.csrf_token) {
+                            formData.append('csrf_token', sessionData.csrf_token);
+                        }
+                        return fetch('login.php', {
+                            method: 'POST',
+                            body: formData
+                        });
+                    })
+                    .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Falha de rede.');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        window.location.href = data.redirect;
+                    } else {
+                        errorTextEl.innerText = data.message;
+                        statusMsgEl.classList.add('hidden');
+                        errorMsgEl.classList.remove('hidden');
+                        errorMsgEl.classList.add('shake');
+                        setTimeout(() => errorMsgEl.classList.remove('shake'), 420);
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.disabled = false;
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    errorTextEl.innerText = 'Falha: Servidor PHP inativo ou Banco Offline.';
+                    statusMsgEl.classList.add('hidden');
+                    errorMsgEl.classList.remove('hidden');
+                    errorMsgEl.classList.add('shake');
+                    setTimeout(() => errorMsgEl.classList.remove('shake'), 420);
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                });
+            });
+        }
+    });
+</script>
+</body></html>
